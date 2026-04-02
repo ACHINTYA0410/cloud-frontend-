@@ -9,6 +9,7 @@ import {
   ReferenceDot,
 } from "recharts";
 import type { PowerReading } from "@/lib/types";
+import { motion } from "framer-motion";
 
 interface Props {
   data: PowerReading[];
@@ -37,9 +38,14 @@ export default function PowerChart({ data }: Props) {
   const anomalies = data.filter((d) => d.isAnomaly);
 
   return (
-    <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
-      <h2 className="font-serif text-xl font-bold text-foreground mb-1">Power Consumption Over Time</h2>
-      <p className="text-sm text-muted-foreground font-sans mb-6">24-hour monitoring window · anomalies highlighted</p>
+    <motion.div
+      className="bg-card rounded-2xl border border-border p-6 shadow-sm"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
+      <h2 className="font-sans text-xl font-semibold text-foreground mb-1">Power Consumption Over Time</h2>
+      <p className="text-xs text-muted-foreground font-sans mb-6">24-hour monitoring window with highlighted anomalies</p>
       <ResponsiveContainer width="100%" height={320}>
         <LineChart data={data} margin={{ top: 10, right: 10, bottom: 0, left: -10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(35 18% 85%)" />
@@ -77,6 +83,6 @@ export default function PowerChart({ data }: Props) {
           ))}
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </motion.div>
   );
 }

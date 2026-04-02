@@ -4,7 +4,6 @@ import { predictAnomalies } from "@/api";
 
 export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-// ── Realistic value ranges from UCI dataset ──────────────────────────────────
 function randomInRange(min: number, max: number) {
   return min + Math.random() * (max - min);
 }
@@ -44,7 +43,6 @@ export function useStreamingData(intervalMs = 2000) {
   // tri-state: null = unknown, true = reachable, false = unreachable
   const backendAvailableRef = useRef<boolean | null>(null);
 
-  // ── Single reading generation ───────────────────────────────────────────────
   const generatePoint = useCallback(async () => {
     const idx         = indexRef.current;
     indexRef.current += 1;
@@ -55,13 +53,11 @@ export function useStreamingData(intervalMs = 2000) {
     const now       = new Date();
     const timeLabel = now.toLocaleTimeString("en-GB", { hour12: false });
 
-    // Always try the real backend — no simulation fallback
     try {
       const results = await predictAnomalies([rawReading]);
       const r       = results[0];
 
       if (r) {
-        // Backend is alive — clear any previous error
         if (backendAvailableRef.current !== true) {
           backendAvailableRef.current = true;
           setBackendError(null);
@@ -73,6 +69,9 @@ export function useStreamingData(intervalMs = 2000) {
           consumption:              r.readings.global_active_power,
           anomalyScore:             r.score,
           isAnomaly:                r.anomaly,
+          anomalyClass:             r.anomaly_class,
+          anomalySeverity:          r.anomaly_severity,
+          riskIndex:                r.risk_index,
           global_active_power:      r.readings.global_active_power,
           global_reactive_power:    r.readings.global_reactive_power,
           voltage:                  r.readings.voltage,
@@ -87,21 +86,19 @@ export function useStreamingData(intervalMs = 2000) {
         });
       }
     } catch (err: unknown) {
-      // Backend is NOT reachable — stop the stream and surface a clear error
       backendAvailableRef.current = false;
 
       const message =
         err instanceof Error
           ? err.message
-          : "Cannot connect to the Flask backend.";
+          : "Cannot connect to the data service.";
 
       setBackendError(
         `Backend unreachable at ${API_BASE}. ` +
-        `Make sure Flask is running (run start_backend.bat or python app.py). ` +
+        `Make sure the data service is running. ` +
         `Details: ${message}`
       );
 
-      // Stop the stream so we don't keep retrying silently
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -110,13 +107,12 @@ export function useStreamingData(intervalMs = 2000) {
     }
   }, []);
 
-  // ── Start / stop / reset ────────────────────────────────────────────────────
   const start = useCallback(() => {
     if (intervalRef.current) return;
     setBackendError(null);
     backendAvailableRef.current = null;
     setIsStreaming(true);
-    generatePoint();                              // immediate first reading
+    generatePoint();
     intervalRef.current = setInterval(generatePoint, intervalMs);
   }, [generatePoint, intervalMs]);
 
@@ -145,7 +141,6 @@ export function useStreamingData(intervalMs = 2000) {
     stop,
     reset,
     backendError,
-    // Keep backendAvailable as derived boolean for consumers that need it
     backendAvailable: backendAvailableRef.current,
   };
 }

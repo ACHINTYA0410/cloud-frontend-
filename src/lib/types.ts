@@ -8,6 +8,9 @@ export interface PowerReading {
   consumption: number;
   anomalyScore: number;
   isAnomaly: boolean;
+  anomalyClass: "inlier" | "borderline_outlier" | "moderate_outlier" | "critical_outlier";
+  anomalySeverity: "none" | "low" | "medium" | "high";
+  riskIndex: number;
   // Full sensor readings
   global_active_power: number;
   global_reactive_power: number;
@@ -30,6 +33,17 @@ export interface HistoryRow {
   sub_metering_3: number;
   anomaly_score: number;
   is_anomaly: boolean;
+  anomaly_class: "inlier" | "borderline_outlier" | "moderate_outlier" | "critical_outlier";
+  anomaly_severity: "none" | "low" | "medium" | "high";
+  risk_index: number;
+}
+
+export interface HistoryResponse {
+  rows: HistoryRow[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
 export interface StatsData {
@@ -55,6 +69,9 @@ export interface PredictResult {
   timestamp: string;
   anomaly: boolean;
   score: number;
+  anomaly_class: "inlier" | "borderline_outlier" | "moderate_outlier" | "critical_outlier";
+  anomaly_severity: "none" | "low" | "medium" | "high";
+  risk_index: number;
   readings: {
     global_active_power: number;
     global_reactive_power: number;

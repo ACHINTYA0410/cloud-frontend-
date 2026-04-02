@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { PowerReading } from "@/lib/types";
 import { AlertTriangle, CheckCircle, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface Props {
   data: PowerReading[];
@@ -10,24 +11,26 @@ interface Props {
 export default function LiveFeed({ data }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Scroll only the table container — not the whole page
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    // Only auto-scroll if user is near the bottom (within 80px)
     const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     if (nearBottom || data.length <= 5) {
       el.scrollTop = el.scrollHeight;
     }
   }, [data.length]);
 
-  // Chronological order: oldest at top, newest at bottom
   const entries = data.slice(-40);
+  const getStatusLabel = (row: PowerReading) => {
+    if (!row.isAnomaly) return "Inlier";
+    if (row.anomalyClass === "critical_outlier") return "Critical Outlier";
+    if (row.anomalyClass === "moderate_outlier") return "Moderate Outlier";
+    return "Borderline Outlier";
+  };
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="relative p-2 rounded-xl bg-primary/10">
             <Radio className="w-4 h-4 text-primary" />
@@ -36,20 +39,19 @@ export default function LiveFeed({ data }: Props) {
             )}
           </div>
           <div>
-            <h3 className="font-serif text-base font-bold text-foreground">
+            <h3 className="font-sans text-base font-semibold text-foreground">
               Real-time Feed
             </h3>
-            <p className="text-xs text-muted-foreground font-sans">
-              Latest sensor readings — anomalies highlighted
+            <p className="text-xs text-muted-foreground font-sans tracking-wide">
+              Latest readings
             </p>
           </div>
         </div>
-        <span className="text-xs text-muted-foreground font-sans bg-secondary px-2.5 py-1 rounded-full">
+        <span className="text-xs text-muted-foreground font-sans bg-secondary/70 px-2.5 py-1 rounded-full border border-border/60">
           {data.length} readings
         </span>
       </div>
 
-      {/* Fixed-height scrollable container — only THIS scrolls, not the page */}
       <div
         ref={scrollRef}
         className="overflow-y-auto"
@@ -68,7 +70,7 @@ export default function LiveFeed({ data }: Props) {
                   (h) => (
                     <th
                       key={h}
-                      className="px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap"
+                      className="px-4 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.08em] whitespace-nowrap"
                     >
                       {h}
                     </th>
@@ -76,16 +78,21 @@ export default function LiveFeed({ data }: Props) {
                 )}
               </tr>
             </thead>
-            <tbody>
+            <motion.tbody
+              initial="hidden"
+              animate="show"
+              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04 } } }}
+            >
               {entries.map((row, i) => (
-                <tr
+                <motion.tr
                   key={`${row.time}-${i}`}
                   className={cn(
-                    "border-t border-border transition-colors",
+                    "border-t border-border/60 transition-colors",
                     row.isAnomaly
-                      ? "bg-primary/5 hover:bg-primary/10"
-                      : "hover:bg-secondary/50"
+                      ? "hover:bg-primary/10 border-l-[3px] border-l-primary"
+                      : "hover:bg-secondary/40"
                   )}
+                  variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
                 >
                   <td className="px-4 py-2.5 text-muted-foreground tabular-nums text-xs whitespace-nowrap">
                     {row.time}
@@ -113,20 +120,30 @@ export default function LiveFeed({ data }: Props) {
                   </td>
                   <td className="px-4 py-2.5">
                     {row.isAnomaly ? (
-                      <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap">
+                      <motion.span
+                        className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.2, ease: "backOut" }}
+                      >
                         <AlertTriangle className="w-3 h-3" />
-                        Anomaly
-                      </span>
+                        {getStatusLabel(row)}
+                      </motion.span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 bg-green-500/10 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap">
+                      <motion.span
+                        className="inline-flex items-center gap-1.5 bg-green-500/10 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.2, ease: "backOut" }}
+                      >
                         <CheckCircle className="w-3 h-3" />
-                        Normal
-                      </span>
+                        {getStatusLabel(row)}
+                      </motion.span>
                     )}
                   </td>
-                </tr>
+                </motion.tr>
               ))}
-            </tbody>
+            </motion.tbody>
           </table>
         )}
       </div>

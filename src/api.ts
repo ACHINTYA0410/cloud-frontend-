@@ -1,4 +1,4 @@
-import type { HistoryRow, StatsData, ModelInfo, PredictResult } from "@/lib/types";
+import type { HistoryResponse, StatsData, ModelInfo, PredictResult } from "@/lib/types";
 
 export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -21,11 +21,12 @@ export async function predictAnomalies(
 
 // ── History ────────────────────────────────────────────────────────────────────
 export async function fetchHistory(
-  limit = 100,
-  anomaliesOnly = false
-): Promise<HistoryRow[]> {
+  pageSize = 100,
+  anomaliesOnly = false,
+  page = 1,
+): Promise<HistoryResponse> {
   const res = await fetch(
-    `${API_BASE}/history?limit=${limit}&anomalies_only=${anomaliesOnly}`,
+    `${API_BASE}/history?page_size=${pageSize}&page=${page}&anomalies_only=${anomaliesOnly}`,
     { headers: { "ngrok-skip-browser-warning": "true" } }
   );
   if (!res.ok) throw new Error(`history failed: ${res.status}`);
