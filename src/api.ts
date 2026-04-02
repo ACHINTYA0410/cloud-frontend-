@@ -1,6 +1,6 @@
 import type { HistoryRow, StatsData, ModelInfo, PredictResult } from "@/lib/types";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 // ── Predict ────────────────────────────────────────────────────────────────────
 // readings: array of [gap, grp, voltage, gi, sm1, sm2, sm3]

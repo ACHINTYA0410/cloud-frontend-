@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import type { PowerReading } from "@/lib/types";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { PowerReading } from "@/lib/types";
 import { predictAnomalies } from "@/api";
+
+export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 // ── Realistic value ranges from UCI dataset ──────────────────────────────────
 function randomInRange(min: number, max: number) {
@@ -94,8 +96,8 @@ export function useStreamingData(intervalMs = 2000) {
           : "Cannot connect to the Flask backend.";
 
       setBackendError(
-        `Backend unreachable at http://localhost:5000. ` +
-        `Make sure Flask is running (run start_backend.bat). ` +
+        `Backend unreachable at ${API_BASE}. ` +
+        `Make sure Flask is running (run start_backend.bat or python app.py). ` +
         `Details: ${message}`
       );
 
