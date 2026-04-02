@@ -9,7 +9,10 @@ export async function predictAnomalies(
 ): Promise<PredictResult[]> {
   const res = await fetch(`${API_BASE}/predict`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
+    },
     body: JSON.stringify({ readings }),
   });
   if (!res.ok) throw new Error(`predict failed: ${res.status}`);
@@ -22,7 +25,8 @@ export async function fetchHistory(
   anomaliesOnly = false
 ): Promise<HistoryRow[]> {
   const res = await fetch(
-    `${API_BASE}/history?limit=${limit}&anomalies_only=${anomaliesOnly}`
+    `${API_BASE}/history?limit=${limit}&anomalies_only=${anomaliesOnly}`,
+    { headers: { "ngrok-skip-browser-warning": "true" } }
   );
   if (!res.ok) throw new Error(`history failed: ${res.status}`);
   return res.json();
@@ -30,21 +34,27 @@ export async function fetchHistory(
 
 // ── Stats ──────────────────────────────────────────────────────────────────────
 export async function fetchStats(): Promise<StatsData> {
-  const res = await fetch(`${API_BASE}/stats`);
+  const res = await fetch(`${API_BASE}/stats`, {
+    headers: { "ngrok-skip-browser-warning": "true" },
+  });
   if (!res.ok) throw new Error(`stats failed: ${res.status}`);
   return res.json();
 }
 
 // ── Model info ─────────────────────────────────────────────────────────────────
 export async function fetchModelInfo(): Promise<ModelInfo> {
-  const res = await fetch(`${API_BASE}/model-info`);
+  const res = await fetch(`${API_BASE}/model-info`, {
+    headers: { "ngrok-skip-browser-warning": "true" },
+  });
   if (!res.ok) throw new Error(`model-info failed: ${res.status}`);
   return res.json();
 }
 
 // ── Health ─────────────────────────────────────────────────────────────────────
 export async function fetchHealth(): Promise<{ status: string; model_loaded: boolean; supabase_configured: boolean }> {
-  const res = await fetch(`${API_BASE}/health`);
+  const res = await fetch(`${API_BASE}/health`, {
+    headers: { "ngrok-skip-browser-warning": "true" },
+  });
   if (!res.ok) throw new Error(`health failed: ${res.status}`);
   return res.json();
 }
